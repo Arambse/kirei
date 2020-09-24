@@ -1,24 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { getReviewItems } from './db';
 import './App.css';
 
 function App() {
+  const [reviews, setReviews] = useState(null);
+  const history = useHistory();
+
+  useEffect(() => {
+    const getReviews = async () => {
+      const items = await getReviewItems();
+      setReviews(items);
+    };
+
+    getReviews();
+  }, []);
+
+  if (!reviews) {
+    return <div />;
+  }
+
+  const onReviewClick = () => {
+    history.push('/review');
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <span>{`Review: ${reviews.length}`}</span>
+      <button disabled={reviews.length === 0} onClick={onReviewClick}>
+        Review
+      </button>
     </div>
   );
 }
