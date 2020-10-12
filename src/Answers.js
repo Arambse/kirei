@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function Answers({ itemId, parts, answers, onAnswerChange }) {
+function Answers({ itemId, parts, answers, onAnswerChange, className }) {
   return (
     <div>
       {parts.map((part, index) => {
@@ -12,6 +12,7 @@ function Answers({ itemId, parts, answers, onAnswerChange }) {
             value={answers[index]}
             onChange={(e) => onAnswerChange(e, index)}
             className={`${index !== parts.length - 1 && 'mr-5'}`}
+            className={className}
           />
         );
       })}

@@ -49,9 +49,11 @@ export const getReviewItems = async () => {
       const grammarRequest = grammarStore.getAll();
       grammarRequest.onsuccess = (e) => {
         const grammar = e.target.result;
-        const toReview = grammar.filter(
-          ({ nextReview, active }) => active && Date.now() > nextReview,
-        );
+        const toReview = grammar
+          .filter(({ nextReview, active }) => active && Date.now() > nextReview)
+          .reduce((res, obj) => {
+            return { ...res, [obj.id]: obj };
+          }, {});
 
         res(toReview);
       };
@@ -189,7 +191,7 @@ export const grammarPoints = {
     chapter: 1,
     chapterOrder: 4,
     active: false,
-    translation: ['X is famous for Y, X is know because Y'],
+    translation: ['X is famous for Y', 'X is know because Y'],
     explanation:
       'Either a noun or a sentence occors before で to state what X is famous for or the reason that X is famous.',
   },
@@ -366,5 +368,112 @@ export const grammarPoints = {
     translation: ['for', 'to'],
     explanation:
       'Xにとって means "to X; forX" in a context where something or someone is important to X, or is necessary, useful, good, difficult, etc. For X. X is often a person, a geographic unit or an organization.',
+  },
+  nakerebanaranai: {
+    id: 'nakerebanaranai',
+    title: 'なければならない｜なくてはいけない',
+    parts: [
+      ['V-nai', 'A-nai'],
+      ['なければ', 'なくて'],
+      ['いけない', 'ならない'],
+    ],
+    sentence: '調べなきゃならないことがあるから、図書館に行ってくるよ',
+    sentence2:
+      '今朝、朝寝坊してクラスに遅れちゃったから、明日はもっと早く起きなくちゃ',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 1,
+    active: false,
+    translation: ['have to', 'must'],
+    explanation:
+      'This pattern express the idea of obligaion. Although the two patterns are interchangeable, there is a subtle difference. ならない is often used when the speaker expresses his own self of obligation, while いけない is commonly used when the sense of obligation is on the hearer. ならない in sentence ending position can be omitted.',
+  },
+
+  wanohitotsuda: {
+    id: 'wanohitotsuda',
+    title: '〜は〜の〜一つだ',
+    parts: ['Noun', 'は', 'NP', ['の一つだ', 'の一人だ']],
+    sentence: '漢字は日本語の勉強で最も大切なものの一つです',
+    sentence2: 'もーシアルとは最も人気がある作曲家の一人です',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 3,
+    active: false,
+    translation: ['X is one of the'],
+    explanation:
+      'The structure is used to describe X while indicating that X is not the only example object, person etc.',
+  },
+  nokawarini: {
+    id: 'nokawarini',
+    title: 'の代わりに',
+    parts: ['Noun', 'の代わりに'],
+    sentence: '最近日本で現金の代わりにカードを使う人が多くなった',
+    sentence2: 'ペンの代わりに鉛筆を使ってください',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 5,
+    active: false,
+    translation: ['in place of', 'instead of'],
+    explanation:
+      'の代わりに is used to present something/someone that is replacing or has been replaced by something/someone. When the context is clear, Nounの can be omitted.',
+  },
+  tamenipurpose: {
+    id: 'tamenipurpose',
+    title: '〜ために (purpose)',
+    parts: [['Noun+の', 'V-plain.non-past'], ['の', 'ために', 'ための']],
+    sentence: '日本中を安く旅行するためにJRパスを買おうと思っている',
+    sentence2:
+      '将来、日本の会社で働きたいと思っている。そのためにはもっと日本語が上手にならなくてはいけない',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 6,
+    active: false,
+    translation: ['in order to', 'for the purpose of', 'for the sake of'],
+    explanation:
+      'の代わりに is used to present something/someone that is replacing or has been replaced by something/someone. When the context is clear, Nounの can be omitted.',
+  },
+  tamenireason: {
+    id: 'tamenireason',
+    title: '〜ために (reason)',
+    parts: [['い-adjective', 'な-adjectiveな'], ['ために']],
+    sentence: 'トムさんは日本語が上手なために、時々通訳を頼まれる',
+    sentence2: '勉強が忙しいために、友達と会う時間がない',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 7,
+    active: false,
+    translation: ['because', 'due to'],
+    explanation:
+      'When ために is preceeded by an i-adjective or na-adjective or the past form of a verb, it indicates reason or cause. When ために is reason/cause, it can be replaced by から、ので which are less formal.',
+  },
+  akabka: {
+    id: 'akabka',
+    title: 'AかBか',
+    parts: ['〜か', '〜か'],
+    sentence:
+      '東京から九州まで新幹線で行くか飛行機で行くか、まで決めていないです。',
+    sentence2: '私は毎朝ジュースか水を飲む。',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 8,
+    active: false,
+    translation: ['Either A or B', 'Wheter A or B'],
+    explanation:
+      'The phrase AかBか is used to present alternatives. When B か is followed by a case particle (e.g が、を、へ、に、で、と) the second か is usually dropped.',
+  },
+  youninaru: {
+    id: 'youninaru',
+    title: 'ようになる',
+    parts: ['V-Plain.non-past (often potential form)', 'ようになる'],
+    sentence: '日本人の友達ができてから、日本語が上手に話せるようになった。',
+    sentence2:
+      'スポーツジムに行くようになってから、毎朝早く起きるようになりました。',
+    level: 0,
+    chapter: 2,
+    chapterOrder: 11,
+    active: false,
+    translation: ['come to (be able to) V', 'Not V now', 'not V anymore'],
+    explanation:
+      'ようになる indicates a gradual change over a certain period of time. It means that someone or something comes to the point where he/she does (or can do) something or does not (or cannot) do something. V-なくなる is synonymous wih V-ないようになる. The difference is that the latter implies a more gradual change.',
   },
 };

@@ -1,7 +1,9 @@
 import React from 'react';
 
 function DetailedExplanation({ item }) {
-  const { sentence, sentence2, translation, explanation, title } = item;
+  const { sentence, sentence2, translation, explanation, parts, title } = item;
+
+  console.log(parts);
   return (
     <div className="review-details">
       <div className="review-details-translation">
@@ -9,6 +11,10 @@ function DetailedExplanation({ item }) {
         {translation.map((t, i) => (
           <div key={t}>{`${t}${i !== translation.length - 1 ? ';' : ''}`}</div>
         ))}
+        <div className="mt-5">
+          <div className="title">Pattern</div>
+          <div>{parts.join(' ｜ ')}</div>
+        </div>
       </div>
       <div className="review-details-sentences text-sm">
         <div className="title">Explanation</div>

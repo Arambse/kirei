@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 import Answers from './Answers';
-import continueSvg from './continue.svg';
+import { FaChevronRight } from 'react-icons/fa';
 
-function GrammarReview({ onAnswersSubmit, item, className }) {
+function GrammarPatternReview({ onAnswersSubmit, item, correct }) {
   const { title, sentence, sentence2, id, parts } = item;
   const [answers, setAnswers] = useState(
     Array.from({ length: parts.length }, (v, i) => ''),
@@ -11,7 +11,7 @@ function GrammarReview({ onAnswersSubmit, item, className }) {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    setAnswers(Array.from({ length: parts.length }, (v, i) => ''));
+    // setAnswers(Array.from({ length: parts.length }, (v, i) => ''));
     onAnswersSubmit(answers, item);
   };
 
@@ -25,20 +25,31 @@ function GrammarReview({ onAnswersSubmit, item, className }) {
     setAnswers(newAnswers);
   };
 
+  const wrapperClassName =
+    correct !== null
+      ? correct
+        ? 'review-correct-answer'
+        : 'review-incorrect-answer'
+      : '';
+
+  const svgClass = correct !== null ? 'fill-white filter-shadow-black' : '';
+  const inputClass = correct !== null ? 'text-white text-shadow-black' : '';
+
   return (
-    <form className={`${className} inputs`} onSubmit={onSubmit}>
+    <form className={`${wrapperClassName} inputs`} onSubmit={onSubmit}>
       <div className="answers">
         <Answers
           itemId={id}
           parts={parts}
           answers={answers}
           onAnswerChange={onAnswerChange}
+          className={inputClass}
         />
         <button type="submit" hidden />
       </div>
-      <img src={continueSvg} className="continue-icon" alt="logo" />
+      <FaChevronRight className={`continue-icon ${svgClass}`} alt="logo" />
     </form>
   );
 }
 
-export default GrammarReview;
+export default GrammarPatternReview;

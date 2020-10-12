@@ -4,7 +4,9 @@ import { useHistory } from 'react-router-dom';
 import { updateReviewItem, getReviewItems } from './db';
 
 import continueSvg from './continue.svg';
-import GrammarReview from './GrammarReview';
+import GrammarPatternReview from './GrammarPatternReview';
+import GrammarMeaningReview from './GrammarMeaningReview';
+
 import DetailedExplanation from './DetailedExplanation';
 
 const shuffleArray = (array) => {
@@ -16,51 +18,66 @@ const shuffleArray = (array) => {
   return newArr;
 };
 
+const siblingReviewType = (key) => {
+  const [id, type] = key.split('_');
+  const newType = type === 'meaning' ? 'pattern' : 'meaning';
+  return `${id}_${newType}`;
+};
+
+const randomIncorrectReview = (reviews) => {
+  return Object.keys(reviews).find((r) => !reviews[r]);
+};
+
+const finishedReviews = (reviews) => {
+  return !Object.keys(reviews).some((r) => !reviews[r]);
+};
+
 function ReviewPage() {
   const history = useHistory();
-  const [items, setItems] = useState([]);
-  const [item, setItem] = useState(items[0]);
-  const [review, setReview] = useState(null);
-  const [reviews, setReviews] = useState(null);
+  const [items, setItems] = useState({});
+  const [itemId, setItemId] = useState('');
+  const [review, setReview] = useState('');
+  const [reviews, setReviews] = useState({});
 
-  const [current, setCurrent] = useState(0);
   const [correct, setCorrect] = useState(null);
   const [answered, setAnswered] = useState(false);
 
   useEffect(() => {
     const getReviews = async () => {
       const newItems = await getReviewItems();
-      const totalReviews = newItems
-        .map(({ id }) => {
-          return [[id, 'meaning'], [id, 'pattern']];
-        })
-        .reduce((res, arr) => {
-          return [...res, ...arr];
-        }, []);
-
-      const shuffledReviews = shuffleArray(totalReviews);
+      const totalReviews = Object.keys(newItems).reduce((res, id) => {
+        return { ...res, [`${id}_pattern`]: false, [`${id}_meaning`]: false };
+      }, {});
 
       setItems(newItems);
-      setReviews(shuffledReviews);
-      setReview(shuffledReviews[0]);
-      setItem(newItems.find(({ id }) => id === shuffledReviews[0][0]));
+      setReviews(totalReviews);
+      setReview(Object.keys(totalReviews)[0]);
+      setItemId(Object.keys(newItems)[0]);
     };
 
     getReviews();
   }, []);
 
-  if (!item) {
+  if (!itemId) {
     return <div />;
   }
 
-  const itemFromReview = (review) => {
-    return items.find(({ id }) => id === review[0]);
+  const { title, chapter } = items[itemId];
+  const reviewType = review.split('_')[1];
+
+  const itemIdFromReview = (review) => {
+    const reviewId = review.split('_')[0];
+    return Object.keys(items).find((id) => id === reviewId);
   };
 
-  const checkAnswer = (answers) => {
-    let correct;
-    const { parts } = item;
+  const checkMeaning = (answer) => {
+    const { translation } = items[itemId];
+    return translation.some((t) => t.toLowerCase() === answer);
+  };
 
+  const checkPattern = (answers) => {
+    let correct = false;
+    const { parts } = items[itemId];
     parts.forEach((part, i) => {
       const answer = answers[i];
 
@@ -68,43 +85,60 @@ function ReviewPage() {
         if (part.includes(answer)) {
           correct = true;
         }
-      } else if (!answer || part !== answer.toLowerCase()) {
-        correct = false;
+      } else if (answer && part === answer.toLowerCase()) {
+        correct = true;
       }
     });
 
     return correct;
   };
 
-  const onAnswersSubmit = (answers, item, setAnswers) => {
-    if (!answered) {
+  const checkAnswer = (answers) => {
+    if (reviewType === 'pattern') {
+      return checkPattern(answers);
+    }
+
+    if (reviewType === 'meaning') {
+      return checkMeaning(answers[0]);
+    }
+  };
+
+  const onAnswersSubmit = (answers) => {
+    if (correct === null) {
       const isCorrect = checkAnswer(answers);
       setCorrect(isCorrect);
-      setAnswered(true);
-      updateReviewItem(item, isCorrect);
+
+      if (!isCorrect) {
+        updateReviewItem(items[itemId], false);
+      } else {
+        const itemOtherReviewAnswer = reviews[siblingReviewType(review)];
+        if (itemOtherReviewAnswer) {
+          updateReviewItem(items[itemId], true);
+        }
+      }
+
+      setCorrect(isCorrect);
+      setReviews({ ...reviews, [review]: isCorrect });
       return;
     }
 
-    const newCurrent = current + 1;
-    if (newCurrent > reviews.length - 1) {
+    const isFinishedReviews = finishedReviews(reviews);
+    if (isFinishedReviews) {
       history.push('/review-end');
       return;
     }
 
-    const newReview = reviews[newCurrent];
+    const newReview = randomIncorrectReview(reviews);
+    const newItem = itemIdFromReview(newReview);
 
-    setCurrent(newCurrent);
-    setItem(itemFromReview(newReview));
+    setItemId(newItem);
     setReview(newReview);
-    setAnswered(false);
+    setCorrect(null);
     return;
   };
 
-  const { title, chapter } = item;
-  const reviewType = review[1];
-
   return (
-    <div>
+    <div className="ReviewPage">
       <header className="App-header">
         <div className="review-metadata">
           <span className="review-subtitle"> {`chapter ${chapter}`}</span>
@@ -112,22 +146,36 @@ function ReviewPage() {
         <div className="review-title">{title}</div>
       </header>
       <div className="main" />
-      <GrammarReviewTitle type={reviewType} />
       <GrammarReview
-        item={item}
+        type={reviewType}
+        item={items[itemId]}
         onAnswersSubmit={onAnswersSubmit}
-        className={answered ? (correct ? `bg-green` : `bg-red`) : ''}
+        correct={correct}
       />
-      <DetailedExplanation item={item} />
+      <DetailedExplanation item={items[itemId]} />
     </div>
   );
 }
 
-const GrammarReviewTitle = ({ type }) => {
+const GrammarReview = ({ type, item, onAnswersSubmit, correct }) => {
   return type === 'pattern' ? (
-    <GrammarReviewTitlePattern />
+    <div>
+      <GrammarReviewTitlePattern />
+      <GrammarPatternReview
+        item={item}
+        onAnswersSubmit={onAnswersSubmit}
+        correct={correct}
+      />
+    </div>
   ) : (
-    <GrammarReviewTitleMeaning />
+    <div>
+      <GrammarReviewTitleMeaning />
+      <GrammarMeaningReview
+        item={item}
+        onAnswersSubmit={onAnswersSubmit}
+        correct={correct}
+      />
+    </div>
   );
 };
 
