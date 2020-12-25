@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import ReactTooltip from 'react-tooltip';
+
 import { getReviewItems, getAllGrammar, setReviewActive } from './db';
 import './App.css';
 
@@ -97,11 +99,35 @@ const Chapter = ({ chapter }) => {
   return <div className="Chapter">{`Chapter ${chapter}`}</div>;
 };
 
-const GrammarListItem = ({ grammar: { title, level, active }, onClick }) => {
+const GrammarListItem = ({
+  grammar: { id, title, level, active, explanation },
+  onClick,
+}) => {
   return (
-    <div className="GrammarListItem">
+    <div data-tip data-for={id} className="GrammarListItem">
       <GrammarBadge title={title} active={active} onClick={onClick} />
       <GrammarProgress level={level} />
+      <ReactTooltip
+        className="Tooltip"
+        arrowColor="#f0a500"
+        type="light"
+        id={id}
+        effect="solid"
+        place="top"
+      >
+        <div
+          style={{
+            fontSize: '20px',
+            width: '430px',
+            textAlign: 'left',
+            lineHeight: '1.4',
+            paddingTop: '10px',
+            paddingBottom: '10px',
+          }}
+        >
+          {explanation}
+        </div>
+      </ReactTooltip>
     </div>
   );
 };

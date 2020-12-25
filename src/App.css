@@ -18,6 +18,12 @@
   pointer-events: none;
 }
 
+.Tooltip {
+  border: 2px solid #f0a500 !important;
+  border-radius: 5px !important;
+  opacity: 100% !important;
+}
+
 .App-header {
   background-color: #f0a500;
   height: 320px;
@@ -205,6 +211,7 @@
   padding: 5px;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   font-weight: 400;
+  font-size: 20px;
   margin-top: 10px;
   margin-bottom: 10px;
   cursor: pointer;
